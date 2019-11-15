@@ -5,23 +5,23 @@ import serial
 //Test
 //Test
 
-// Accelerometer part of BMX055 (connected via spi).
+// Power_switch part of BMX055 (connected via spi).
 
-class Accelerometer extends Driver:
+class PowerSwitch extends Driver:
 
-  Accelerometer spi/serial.SpiRegisters:
+  PowerSwitch spi/serial.SpiRegisters:
     super spi
 
   on -> none:
-    // Configure accelerometer
-    spi_.write_u8 REG_BGW_SOFTRESET  0xB6 // reset accelerometer
+    // Configure Power_switch
+    spi_.write_u8 REG_BGW_SOFTRESET  0xB6 // reset Power_switch
     sleep 1000                              // Wait for all registers to reset
     validate_chip_id
     ABW_16Hz ::= 1
     ACCBW    ::= 0x08 | ABW_16Hz
     AFS_2G   ::= 0x03
-    spi_.write_u8 REG_PMU_RANGE   AFS_2G  // Set accelerometer full range
-    spi_.write_u8 REG_PMU_BW       ACCBW  // Set accelerometer bandwidth
+    spi_.write_u8 REG_PMU_RANGE   AFS_2G  // Set Power_switch full range
+    spi_.write_u8 REG_PMU_BW       ACCBW  // Set Power_switch bandwidth
     spi_.write_u8 REG_D_HBW          0x0  // Use filtered data
     spi_.write_u8 REG_INT_0        0x7F
 
@@ -64,10 +64,12 @@ class Accelerometer extends Driver:
   validate_chip_id -> none:
     // Validate the chip ID
     id ::= spi_.read_u8 REG_CHIP_ID
-    if id != CHIP_ID: throw "Unknown Accelerometer chip id $id"
+    if id != CHIP_ID: throw "Unknown Power_switch chip id $id"
 
-  // Registers for communicating with the accelerometer.
-  static REG_CHIP_ID       ::= 0x00
+  // Registers for communicating with the Power_switch.
+
+  //Steinunn part
+  static REG_INSTR_POINTER ::= 0x00
   static REG_D_X_LSB       ::= 0x02
   static REG_D_X_MSB       ::= 0x03
   static REG_D_Y_LSB       ::= 0x04
@@ -86,6 +88,8 @@ class Accelerometer extends Driver:
   static REG_PMU_LPW       ::= 0x11
   static REG_PMU_LOW_POWER ::= 0x12
   static REG_INT_0         ::= 0x22
+
+  //Chris
   static REG_INT_1         ::= 0x23
   static REG_INT_2         ::= 0x24
   static REG_INT_3         ::= 0x25
@@ -108,15 +112,3 @@ class Accelerometer extends Driver:
   // Expected result of reading REG_CHIP_ID.
   static CHIP_ID           ::= 0xFA
 
-
-class Point:
-
-  Point .x .y .z:
-
-  x ::= 0
-  y ::= 0
-  z ::= 0
-
-  print_string:
-    scale ::= 2.0/2048.0
-    ^"x=$(%.2f x*scale) y=$(%.2f y*scale) z=$(%.2f z*scale)"
