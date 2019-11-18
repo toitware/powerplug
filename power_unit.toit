@@ -4,8 +4,9 @@ import serial
 
 class PowerSwitch:
 
-  // Registers for communicating with the PowerSwitch.
+  // Register Map:
 
+<<<<<<< HEAD
   static REG_INSTR_POINTER      ::= 0x00 // u16 Address pointer for read or write commands
   static REG_SYS_STAT           ::= 0x02 // b16 System status register
   static REG_SYS_VERS           ::= 0x04 // u16 System Version, date code info
@@ -57,4 +58,6 @@ class PowerSwitch:
   static REG_MIN_MAX_POINTER_2  ::= 0xD6 // u16 Address Pointer for Min/Max 2 Outputs
   static REG_ENERGY_CONTROL     ::= 0xDC // u16 Input register for reset/start of Energy Accumulation
   static REG_NO_LOAD_THRESH     ::= 0xE0 // u16 No-Load Threshold for Energy Counting
+=======
+
 
