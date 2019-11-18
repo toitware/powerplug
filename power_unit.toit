@@ -4,8 +4,9 @@ import serial
 
 class PowerSwitch:
 
-  // Registers for communicating with the PowerSwitch.
+  // Register Map:
 
+  // Output Registers:
   static REG_INSTR_POINTER      ::= 0x00 // Address pointer for read or write commands
   static REG_SYS_STAT           ::= 0x02 // 
   static REG_SYS_VERS           ::= 0x04 // 
@@ -25,6 +26,8 @@ class PowerSwitch:
   static REG_MIN_REC_2          ::= 0x42 //
   static REG_MAX_REC_1          ::= 0x4E // 
   static REG_MAX_REC_2          ::= 0x52 // 
+
+  // Calibration Registers:
   static REG_CAL_DEL            ::= 0x5E // 
   static REG_GN_CURR_RMS        ::= 0x60 // 
   static REG_GN_VOLT_RMS        ::= 0x62 // 
@@ -36,6 +39,8 @@ class PowerSwitch:
   static REG_DC_OFF_CURR        ::= 0x74 // 
   static REG_PHASE_COMP         ::= 0x76 // 
   static REG_APP_PWR_DIV        ::= 0x78 //
+
+  // Design Configuration Registers
   static REG_SYS_CONFIG         ::= 0x7A // 
   static REG_EVENT_CONFIG       ::= 0x7E //
   static REG_RANGE              ::= 0x82 // 
@@ -49,10 +54,14 @@ class PowerSwitch:
   static REG_VOLT_SURGE_LIM     ::= 0xA2 // 
   static REG_OVR_CURR_LIM       ::= 0xA4 // 
   static REG_OVR_PWR_LIM        ::= 0xA8 // 
+
+  // Temperature Compensation Registers
   static REG_TEMP_COMP_FREQ     ::= 0xC6 // 
   static REG_TEMP_COMP_CURR     ::= 0xC8 // 
   static REG_TEMP_COMP_PWR      ::= 0xCA // 
   static REG_AMB_TEMP_REF_VOLT  ::= 0xCC // 
+
+  // Control Registers for Peripherals
   static REG_MIN_MAX_POINTER_1  ::= 0xD4 // 
   static REG_MIN_MAX_POINTER_2  ::= 0xD6 // 
   static REG_ENERGY_CONTROL     ::= 0xDC // 
