@@ -13,9 +13,10 @@ class MPC39F511:
   MPC39F511 .i2c_:
   
   // TODO: Implement, command id 0x4E
-  registerReadNBytes address_high address_low registers reg_address:
+  registerReadNBytes address_high address_low reg_address:
+    registers_ := serial.I2CRegisters (i2c_.connect 0x74)
     n_bytes := 35
-    command_array := ByteArray 8
+    command_array := Array 8
      
     command_array[0] = COMMAND_HEADER_BYTE
     command_array[1] = 0x08
@@ -29,32 +30,18 @@ class MPC39F511:
     checksumTotal := 0
     for i := 0; i < 7; i++:
       checksumTotal += command_array[i]
-      //log checksumTotal
-      //log command_array[i]
 
     command_array[7] = 0x5E
-    //log "hi from 34"
-   
+
     for i := 0; i < 8; i++:
-      registers.write_u8 0x74 command_array[i]
-    
-    //registers.write COMMAND_HEADER_BYTE
-    //registers.write 0x08
-    //registers.write COMMAND_SET_ADDRESS_POINTER
-    //registers.write address_high
-    //registers.write address_low
-    //registers.write COMMAND_REGISTER_READ_N_BYTES
-    //registers.write n_bytes
-    //registers.write 0x5E
-
-    sleep 100
-
+      //log command_array[i]
+      registers_.write_u8 0x00 command_array[i]
 
     byte_array_size := n_bytes + 3
     byte_array := ByteArray byte_array_size
-
+    
     for i := 0; i < byte_array_size; i++:
-      byte_array[i] = registers.read_u16_le reg_address
+      byte_array[i] = registers_.read_u8 0x02
       log byte_array[i]
 
   static COMMAND_HEADER_BYTE            ::= 0xA5 
@@ -75,6 +62,4 @@ main:
     gpio.Pin 16
 
   mpc := MPC39F511 i2c
-  registers := serial.I2CRegisters (i2c.connect 0x74)
-  mpc.registerReadNBytes 0x00 0x02 registers 0x04 
-  
+  mpc.registerReadNBytes 0x00 0x02 0x04
