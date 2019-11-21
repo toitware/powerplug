@@ -10,10 +10,11 @@ class MPC39F511:
   // TODO: DETERMINE FIELDS
   i2c_ := null
 
+  MPC39F511 .i2c_:
+
   // TODO: Implement, command id 0x4E
-  registerReadNBytes address_high address_low n_bytes:
-    byte_array_size := n_bytes + 3
-    byte_array := ByteArray byte_array_size
+  registerReadNBytes address_high address_low reg_address:
+    n_bytes := 32
     command_array := Array 8
      
     command_array[0] = COMMAND_HEADER_BYTE
@@ -38,8 +39,14 @@ class MPC39F511:
 
     sleep 100
 
+
+    byte_array_size := n_bytes + 3
+    byte_array := ByteArray byte_array_size
+
     for i := 0; i < byte_array_size; i++:
-      byte_array[i] = registers.read
+      byte_array[i] = registers.read_u16_le reg_address
+      log byte_array[i]
+
   static COMMAND_HEADER_BYTE            ::= 0xA5 
   static COMMAND_REGISTER_READ_N_BYTES  ::= 0x4E
   static COMMAND_REGISTER_WRITE_N_BYTES ::= 0x4D
@@ -47,7 +54,7 @@ class MPC39F511:
 
 
   // TODO: Implement, command id 0x4D
-  registerWriteNBytes:
+  //registerWriteNBytes:
 
   // More methods to come.
 
@@ -57,6 +64,7 @@ main:
     gpio.Pin 17
     gpio.Pin 16
 
-  mpc := MPC39F511
-  mpc.i2c_ = i2c
+  mpc := MPC39F511 i2c
+
+  mpc.registerReadNBytes 0x00 0x02 0x04
   
