@@ -1,5 +1,5 @@
 // Copyright (C) 2019 Toitware ApS. All rights reserved.
-import serial show *
+import serial
 import modules.i2c show *
 import gpio
 
@@ -11,11 +11,11 @@ class MPC39F511:
   i2c_ := null
 
   MPC39F511 .i2c_:
-
+  
   // TODO: Implement, command id 0x4E
-  registerReadNBytes address_high address_low reg_address:
-    n_bytes := 32
-    command_array := Array 8
+  registerReadNBytes address_high address_low registers reg_address:
+    n_bytes := 35
+    command_array := ByteArray 8
      
     command_array[0] = COMMAND_HEADER_BYTE
     command_array[1] = 0x08
@@ -29,13 +29,23 @@ class MPC39F511:
     checksumTotal := 0
     for i := 0; i < 7; i++:
       checksumTotal += command_array[i]
+      //log checksumTotal
+      //log command_array[i]
 
-    command_array[7] = checksumTotal % 256
-
-    registers := I2CRegisters i2c_
-
+    command_array[7] = 0x5E
+    //log "hi from 34"
+   
     for i := 0; i < 8; i++:
-      registers.write_bytes command_array[i]
+      registers.write_u8 0x74 command_array[i]
+    
+    //registers.write COMMAND_HEADER_BYTE
+    //registers.write 0x08
+    //registers.write COMMAND_SET_ADDRESS_POINTER
+    //registers.write address_high
+    //registers.write address_low
+    //registers.write COMMAND_REGISTER_READ_N_BYTES
+    //registers.write n_bytes
+    //registers.write 0x5E
 
     sleep 100
 
@@ -65,6 +75,6 @@ main:
     gpio.Pin 16
 
   mpc := MPC39F511 i2c
-
-  mpc.registerReadNBytes 0x00 0x02 0x04
+  registers := serial.I2CRegisters (i2c.connect 0x74)
+  mpc.registerReadNBytes 0x00 0x02 registers 0x04 
   
