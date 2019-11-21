@@ -1,7 +1,7 @@
 // Copyright (C) 2019 Toitware ApS. All rights reserved.
 import serial show *
 import modules.i2c show *
-import gpio show *
+import gpio
 
 // TODO:
 // put header byte, no of bytes in frame and checksum into block
@@ -33,7 +33,13 @@ class MPC39F511:
 
     registers := I2CRegisters i2c_
 
+    for i := 0; i < 8; i++:
+      registers.write_bytes command_array[i]
 
+    sleep 100
+
+    for i := 0; i < byte_array_size; i++:
+      byte_array[i] = registers.read
   static COMMAND_HEADER_BYTE            ::= 0xA5 
   static COMMAND_REGISTER_READ_N_BYTES  ::= 0x4E
   static COMMAND_REGISTER_WRITE_N_BYTES ::= 0x4D
@@ -48,8 +54,8 @@ class MPC39F511:
 main:
   i2c := I2C
     400_000
-    Pin 17
-    Pin 16
+    gpio.Pin 17
+    gpio.Pin 16
 
   mpc := MPC39F511
   mpc.i2c_ = i2c
