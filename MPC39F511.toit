@@ -35,7 +35,7 @@ class MPC39F511:
 
     for i := 0; i < 8; i++:
       //log command_array[i]
-      registers_.write_u8 0x00 command_array[i]
+      registers_.write_u8 (0x74 + 1) command_array[i]
 
     byte_array_size := n_bytes + 3
     byte_array := ByteArray byte_array_size
