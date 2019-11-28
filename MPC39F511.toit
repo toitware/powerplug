@@ -31,7 +31,7 @@ class MCP39F521:
     sleep 50
     ^device_.read n_bytes_to_read + 3   // Return bytes
 
-  // Write n bytes to a given register
+  // Write to energy accumulation register
   set_energy_accumulation value:
     n_bytes_to_write := 2
     command_array := ByteArray 10
