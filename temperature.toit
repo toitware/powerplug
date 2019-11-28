@@ -53,7 +53,7 @@ class SI7006A20:
      */
     log command_array
     device_.write command_array       // Execute command
-    ^device_.read n_bytes_to_read // Return bytes
+    ^device_.read_reg address n_bytes_to_read // Return bytes
 
   // Write n bytes to a given register
 
@@ -64,11 +64,16 @@ main:
     gpio.Pin 17
     gpio.Pin 16
   
+  // Set relay for measuring
+  relay := gpio.Pin 2
+  relay.configure gpio.OUTPUT_CONF
+  relay.set 1
+  sleep 3000
+
   // Connect device
   device := i2c.connect Si7006_ADDR
-
+  sleep(100)
   // Read output registers
-
   si7006a20 := SI7006A20 device
   for i:=0; i<16; i++:
     bytes_si7006 := si7006a20.register_read Si7006_ADDR modes[i]
@@ -86,3 +91,4 @@ main:
   log "reactive power  $(((binary.LittleEndian bytes_02_1A).uint32 22) / 100.0)"
   log "apparent power $(((binary.LittleEndian bytes_02_1A).uint32 26) / 100.0)"
   */
+  relay.set 0
