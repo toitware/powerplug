@@ -3,21 +3,45 @@ import binary
 import modules.i2c show *
 import gpio
 
+//measure temperature, hold master mode , command code 0xE3
+//read RH/T User Register 1 0xE7
+
+Si7006_ADDR                             :=0x40 // default address
+//Si7006 register addresses
+Si7006_MEAS_REL_HUMIDITY_MASTER_MODE    :=0xE5
+Si7006_MEAS_REL_HUMIDITY_NO_MASTER_MODE :=0xF5
+Si7006_MEAS_TEMP_MASTER_MODE            :=0xE3
+Si7006_MEAS_TEMP_NO_MASTER_MODE         :=0xF3
+Si7006_READ_OLD_TEMP                    :=0xE0
+Si7006_RESET 							:=0xFE
+Si7006_WRITE_HUMIDITY_TEMP_CONTR		:=0xE6						
+Si7006_READ_HUMIDITY_TEMP_CONTR 		:=0xE7
+Si7006_WRITE_HEATER_CONTR				:=0x51
+Si7006_READ_HEATER_CONTR				:=0x11
+Si7006_READ_ID_LOW_0					:=0xFA
+Si7006_READ_ID_LOW_1					:=0x0F
+Si7006_READ_ID_HIGH_0					:=0xFC
+Si7006_READ_ID_HIGH_1					:=0xC9
+Si7006_FIRMWARE_0						:=0x84
+Si7006_FIRMWARE_1						:=0xB8
+
+modes := [Si7006_MEAS_REL_HUMIDITY_MASTER_MODE, Si7006_MEAS_REL_HUMIDITY_NO_MASTER_MODE, Si7006_MEAS_TEMP_MASTER_MODE, Si7006_MEAS_TEMP_NO_MASTER_MODE, Si7006_READ_OLD_TEMP, Si7006_RESET, Si7006_WRITE_HUMIDITY_TEMP_CONTR, Si7006_READ_HUMIDITY_TEMP_CONTR, Si7006_WRITE_HEATER_CONTR, Si7006_READ_HEATER_CONTR, Si7006_READ_ID_LOW_0, Si7006_READ_ID_LOW_1, Si7006_READ_ID_HIGH_0, Si7006_READ_ID_HIGH_1, Si7006_FIRMWARE_0, Si7006_FIRMWARE_1]
+
 class SI7006A20:
   device_ := null
 
   SI7006A20 .device_:
   
   // Read 32 bytes from a given register and return a byte array
-  register_read address_high address_low -> ByteArray:
-    n_bytes_to_read := 32
-    command_array := ByteArray 8
+  register_read address mode-> ByteArray:
+    n_bytes_to_read := 2
+    command_array := ByteArray 2
 
-    command_array[0] = 0xA5           // Header byte
-    command_array[1] = 0x08           // Number of bytes in frame
-    command_array[2] = 0x41           // Set address pointer
-    command_array[3] = address_high   // Address high
-    command_array[4] = address_low    // Address low
+    command_array[0] = address           // Header byte
+    command_array[1] = mode //Si7006_MEAS_TEMP_NO_MASTER_MODE            // Number of bytes in frame
+    /*command_array[2] = 0x00           // Set address pointer
+    command_array[3] = 0x00        // Address
+    command_array[4] = add           // Address low
     command_array[5] = 0x4E           // Register read, n bytes
     command_array[6] = 0x20           // Number of bytes to read (32)
     checksum := 0x00
@@ -25,9 +49,11 @@ class SI7006A20:
       checksum += command_array[i]
     
     command_array[7] = checksum           // Checksum (92)
-
+    log "checksum"
+     */
+    log command_array
     device_.write command_array       // Execute command
-    ^device_.read n_bytes_to_read + 3 // Return bytes
+    ^device_.read n_bytes_to_read // Return bytes
 
   // Write n bytes to a given register
 
@@ -39,13 +65,15 @@ main:
     gpio.Pin 16
   
   // Connect device
-  device := i2c.connect 0x40
+  device := i2c.connect Si7006_ADDR
 
   // Read output registers
-  si7006a20 := SI7006A20 device
-  bytes_02_1A := si7006a20.register_read 0x00 0x02
 
-  log bytes_02_1A
+  si7006a20 := SI7006A20 device
+  for i:=0; i<16; i++:
+    bytes_si7006 := si7006a20.register_read Si7006_ADDR modes[i]
+    log bytes_si7006
+    sleep (10)
   /*
   log "status $((binary.LittleEndian bytes_02_1A).uint16 2)"
   log "version $((binary.LittleEndian bytes_02_1A).uint16 4)"
