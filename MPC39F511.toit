@@ -70,7 +70,7 @@ main:
   relay := gpio.Pin 2
   relay.configure gpio.OUTPUT_CONF
   relay.set 1
-  sleep 500
+  sleep 200
   
   // Connect device
   mcp_connection := i2c.connect 0x74
@@ -83,26 +83,28 @@ main:
   
   
   mcp.set_energy_accumulation false // Make sure there are no previous values in the registers
-  sleep 1000
+  sleep 500
   mcp.set_energy_accumulation true // Start accumulating
-  while i < 10:
+  while i < 16:
     mcp_stats := mcp.register_read 0x00 0x02
     //log "status $((binary.LittleEndian mcp_stats).uint16 2)"
     //log "version $((binary.LittleEndian mcp_stats).uint16 4)"
-    log "voltage rms $(((binary.LittleEndian mcp_stats).uint16 6) / 10.0) V"
-    log "line freq $(((binary.LittleEndian mcp_stats).uint16 8) / 1000.0) Hz"
+    //$(%5.2f
+    log "voltage rms $(%3.1f ((binary.LittleEndian mcp_stats).uint16 6) / 10.0) V"
+    log "line freq $(%2.2f ((binary.LittleEndian mcp_stats).uint16 8) / 1000.0) Hz"
     //log "sar adc $(((binary.LittleEndian mcp_stats).uint16 10) / 1000.0)"
-    log "power factor $(((binary.LittleEndian mcp_stats).int16 12) / 32768.0)"
-    log "current rms $(((binary.LittleEndian mcp_stats).uint32 14) / 10000.0) Amp"
-    log "active power  $(((binary.LittleEndian mcp_stats).uint32 18) / 100.0) Watt"
-    log "reactive power  $(((binary.LittleEndian mcp_stats).uint32 22) / 100.0) Watt"
-    log "apparent power $(((binary.LittleEndian mcp_stats).uint32 26) / 100.0) Watt"
+    log "power factor $(%1.2f ((binary.LittleEndian mcp_stats).int16 12) / 32768.0)"
+    log "current rms $(%2.2f ((binary.LittleEndian mcp_stats).uint32 14) / 10000.0) Amp"
+    log "active power  $(%5.2f ((binary.LittleEndian mcp_stats).uint32 18) / 100.0) Watt"
+    log "reactive power  $(%5.2f ((binary.LittleEndian mcp_stats).uint32 22) / 100.0) Watt"
+    log "apparent power $(%5.2f ((binary.LittleEndian mcp_stats).uint32 26) / 100.0) Watt"
     log "---"
     sleep 1000
     mcp_accumulation := mcp.register_read 0x00 0x1E
-    log "Import active energy accumulation $(((binary.LittleEndian mcp_accumulation).int64 2))"
+    log "Import active energy accumulation $(%5.6f ((binary.LittleEndian mcp_accumulation).uint32 2) / 1000000.0) kWh"
+    log "The energy cost is $(%5.6f ((binary.LittleEndian mcp_accumulation).uint32 2) / 1000000.0*1.4) DKK"
     //log "Export Active Energy Counter $(((binary.LittleEndian mcp_accumulation).int64 10))"
-    log "Import reactive energy accumulation $(((binary.LittleEndian mcp_accumulation).int64 18))"
+    log "Import reactive energy accumulation $(%5.6f ((binary.LittleEndian mcp_accumulation).uint32 18) / 1000000.0) kWh"
     //log "Export Reactive Energy Counter $(((binary.LittleEndian mcp_accumulation).int64 26))"
     log "---"
     i += 1
@@ -111,5 +113,5 @@ main:
 
   sleep 50
   relay.set 0
-  sleep 500
+  sleep 100
   
