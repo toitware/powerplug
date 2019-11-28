@@ -13,23 +13,51 @@ class MCP39F521:
     n_bytes_to_read := 32
     command_array := ByteArray 8
 
-    command_array[0] = 0xA5           // Header byte
-    command_array[1] = 0x08           // Number of bytes in frame
-    command_array[2] = 0x41           // Set address pointer
-    command_array[3] = address_high   // Address high
-    command_array[4] = address_low    // Address low
-    command_array[5] = 0x4E           // Register read, n bytes
-    command_array[6] = 0x20           // Number of bytes to read (32)
+    command_array[0] = 0xA5             // Header byte
+    command_array[1] = 0x08             // Number of bytes in frame
+    command_array[2] = 0x41             // Set address pointer
+    command_array[3] = address_high     // Address high
+    command_array[4] = address_low      // Address low
+    command_array[5] = 0x4E             // Register read, n bytes
+    command_array[6] = 0x20             // Number of bytes to read (32)
     checksum := 0x00
     for i := 0; i < 7; i++:
       checksum += command_array[i]
     
-    command_array[7] = checksum           // Checksum (92)
+    checksum = checksum % 256
+    command_array[7] = checksum         // Checksum
 
-    device_.write command_array       // Execute command
-    ^device_.read n_bytes_to_read + 3 // Return bytes
+    device_.write command_array         // Execute command
+    sleep 50
+    ^device_.read n_bytes_to_read + 3   // Return bytes
 
-  // Write n bytes to a given register
+  // Write to energy accumulation register
+  set_energy_accumulation value:
+    n_bytes_to_write := 2
+    command_array := ByteArray 10
+
+    command_array[0] = 0xA5             // Header byte
+    command_array[1] = 0x0A             // Number of bytes in frame
+    command_array[2] = 0x41             // Set address pointer
+    command_array[3] = 0x00             // Address high
+    command_array[4] = 0xDC             // Energy accumulation control register
+    command_array[5] = 0x4D             // Register write, n bytes
+    command_array[6] = 0x02             // Number of bytes to write (2)
+    command_array[7] = 0x00             
+      
+    if value:                           // Reset or start energy accumulation
+      command_array[8] = 0x01         
+    else:                               // Stop energy accumulation  
+      command_array[8] = 0x00
+
+    checksum := 0x00
+    for i := 0; i < 9; i++:
+      checksum += command_array[i]
+
+    checksum = checksum % 256
+    command_array[9] = checksum
+
+    device_.write command_array
 
 main:
   // Set pins for connection to device
@@ -43,38 +71,45 @@ main:
   relay.configure gpio.OUTPUT_CONF
   relay.set 1
   sleep 500
-
+  
   // Connect device
-  device := i2c.connect 0x74
+  mcp_connection := i2c.connect 0x74
+  sleep 50
 
-  // Read output registers
-  mcp_02_1A := MCP39F521 device
-  bytes_02_1A := mcp_02_1A.register_read 0x00 0x02
+  // 
+  mcp := MCP39F521 mcp_connection
+  sleep 50
+  i := 0
+  
+  
+  mcp.set_energy_accumulation false // Make sure there are no previous values in the registers
+  sleep 1000
+  mcp.set_energy_accumulation true // Start accumulating
+  while i < 10:
+    mcp_stats := mcp.register_read 0x00 0x02
+    //log "status $((binary.LittleEndian mcp_stats).uint16 2)"
+    //log "version $((binary.LittleEndian mcp_stats).uint16 4)"
+    log "voltage rms $(((binary.LittleEndian mcp_stats).uint16 6) / 10.0) V"
+    log "line freq $(((binary.LittleEndian mcp_stats).uint16 8) / 1000.0) Hz"
+    //log "sar adc $(((binary.LittleEndian mcp_stats).uint16 10) / 1000.0)"
+    log "power factor $(((binary.LittleEndian mcp_stats).int16 12) / 32768.0)"
+    log "current rms $(((binary.LittleEndian mcp_stats).uint32 14) / 10000.0) Amp"
+    log "active power  $(((binary.LittleEndian mcp_stats).uint32 18) / 100.0) Watt"
+    log "reactive power  $(((binary.LittleEndian mcp_stats).uint32 22) / 100.0) Watt"
+    log "apparent power $(((binary.LittleEndian mcp_stats).uint32 26) / 100.0) Watt"
+    log "---"
+    sleep 1000
+    mcp_accumulation := mcp.register_read 0x00 0x1E
+    log "Import active energy accumulation $(((binary.LittleEndian mcp_accumulation).int64 2))"
+    //log "Export Active Energy Counter $(((binary.LittleEndian mcp_accumulation).int64 10))"
+    log "Import reactive energy accumulation $(((binary.LittleEndian mcp_accumulation).int64 18))"
+    //log "Export Reactive Energy Counter $(((binary.LittleEndian mcp_accumulation).int64 26))"
+    log "---"
+    i += 1
 
-  log bytes_02_1A
-  log "status $((binary.LittleEndian bytes_02_1A).uint16 2)"
-  log "version $((binary.LittleEndian bytes_02_1A).uint16 4)"
-  log "voltage rms $(((binary.LittleEndian bytes_02_1A).uint16 6) / 10.0)"
-  log "line freq $(((binary.LittleEndian bytes_02_1A).uint16 8) / 1000.0)"
-  //log "sar adc $(((binary.LittleEndian bytes_02_1A).uint16 10) / 1000.0)"
-  log "power factor $(((binary.LittleEndian bytes_02_1A).int16 12) * 0.000030517578125)"
-  log "current rms $(((binary.LittleEndian bytes_02_1A).uint32 14) / 10000.0)"
-  log "active power  $(((binary.LittleEndian bytes_02_1A).uint32 18) / 100.0)"
-  log "reactive power  $(((binary.LittleEndian bytes_02_1A).uint32 22) / 100.0)"
-  log "apparent power $(((binary.LittleEndian bytes_02_1A).uint32 26) / 100.0)"
+  mcp.set_energy_accumulation false
 
-  sleep(500)
-  mcp_1E_5A := MCP39F521 device
-  sleep(500)
-  bytes_1E_5A := mcp_1E_5A.register_read 0x00 0x1E
-  log ""
-  log bytes_1E_5A
-  log "Import Active Energy Counter $((binary.LittleEndian bytes_1E_5A).int64 0)"
-  log "Export Active Energy Counter $((binary.LittleEndian bytes_1E_5A).int64 4)"
-  log "Import Reactive Energy Counter $(((binary.LittleEndian bytes_1E_5A).int64 8) / 10.0)"
-  log "Export Reactive Energy Counter $(((binary.LittleEndian bytes_1E_5A).int64 12) / 1000.0)"
-  //log "sar adc $(((binary.LittleEndian bytes_1E_5A).uint16 10) / 1000.0)"
-  log "Minimum Record 1 $(((binary.LittleEndian bytes_1E_5A).uint32 16) * 0.000030517578125)"
-  log "Minimum Record 2 $(((binary.LittleEndian bytes_1E_5A).uint32 18) / 10000.0)"
-  log "Maximum Record 1  $(((binary.LittleEndian bytes_1E_5A).uint32 24) / 100.0)"
-  log "Maximum Record 2  $(((binary.LittleEndian bytes_1E_5A).uint32 26) / 100.0)"
+  sleep 50
+  relay.set 0
+  sleep 500
+  
