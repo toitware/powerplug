@@ -29,7 +29,7 @@ class MCP39F521:
 
     device_.write command_array         // Execute command
     sleep 50
-    ^device_.read n_bytes_to_read + 3   // Return bytes
+    return device_.read n_bytes_to_read + 3   // Return bytes
 
   // Write to energy accumulation register
   set_energy_accumulation value:
