@@ -33,7 +33,7 @@ class SI7006A20:
   
   // Read 32 bytes from a given register and return a byte array
   register_read address mode-> ByteArray:
-    n_bytes_to_read := 10
+    n_bytes_to_read := 2
     command_array := ByteArray 2
 
     command_array[0] =  address          // Header byte
@@ -62,24 +62,24 @@ main:
   device := serial.I2CRegisters
     i2c.connect Si7006_ADDR
   log "device connected"
- 
+
 
   sleep(1)
   // Read output registers
   si7006a20 := SI7006A20 device
   log "Read output registers"
 
-  /* Stopped working at some point
+  /* Stopped working at some point*/
   //Humidity
-  bytes_si7006_hum := si7006a20.register_read Si7006_ADDR Si7006_MEAS_REL_HUMIDITY_NO_MASTER_MODE //modes[3]
+  bytes_si7006_hum := si7006a20.register_read Si7006_ADDR Si7006_READ_HUMIDITY_TEMP_CONTR
   log bytes_si7006_hum
   sleep (10)
    //Convert the data
   humidity := (125.0 * (bytes_si7006_hum[0] * 256.0 + bytes_si7006_hum[1]) / 65536.0) - 6.0
-  log humidity
-  */
+  log "Humidity is $(%3.1f (humidity) ) [%]"
+  
 
-//Temperature
+  //Temperature
   bytes_si7006_temp := si7006a20.register_read Si7006_ADDR Si7006_MEAS_TEMP_MASTER_MODE
   log bytes_si7006_temp
   sleep (10)
