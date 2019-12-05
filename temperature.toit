@@ -32,10 +32,18 @@ class SI7006A20:
   SI7006A20 .device_:
   
   read_temperature -> ByteArray:
-    return device_.read_bytes 0xE3 2
+    commands := ByteArray 1
+    commands[0] = 0xF3
+    device_.write commands
+    sleep 1000
+    return device_.read 2
 
   read_humidity -> ByteArray:
-    return device_.read_bytes 0xE7 2
+    commands := ByteArray 1
+    commands[0] = 0xF5
+    device_.write commands
+    sleep 2000
+    return device_.read 2
 
 main:
   // Set pins for connection to device
@@ -49,40 +57,24 @@ main:
   relay := gpio.Pin 2
   relay.configure gpio.OUTPUT_CONF
   relay.set 1
-  sleep 3000
+  sleep 1000
 
-  // Connect device
-  device := serial.I2CRegisters
-    i2c.connect Si7006_ADDR
-  log "device connected"
+  si7006a20 := SI7006A20 (i2c.connect Si7006_ADDR)
+  sleep 1
 
-
-  sleep(1)
-  // Read output registers
-  si7006a20 := SI7006A20 device
-  log "Read output registers"
-  sleep 3000
-  /* Stopped working at some point*/
-  //Humidity
   bytes_si7006_hum := si7006a20.read_humidity
-  //log bytes_si7006_hum
-  sleep (10)
-   //Convert the data
+  log bytes_si7006_hum
   humidity := (125.0 * (bytes_si7006_hum[0] * 256.0 + bytes_si7006_hum[1]) / 65536.0) - 6.0
-  log "Humidity is $(%3.1f (humidity) ) [%]"
+  log "Humidity is $(%3.5f (humidity) ) [%]"
   sleep 100
-  log si7006a20.read_temperature
 
-  sleep 100
-  //log si7006a20.read_humidity
-  //Temperature
   bytes_si7006_temp := si7006a20.read_temperature
-  //log bytes_si7006_temp
-  sleep (10)
-  cTemp := (175.72 * (bytes_si7006_temp[0] * 256.0+ bytes_si7006_temp[1]) / 65536.0) - 46.85
-  log "Temperature is $(%3.1f (cTemp) ) [C]"
+  log bytes_si7006_temp
 
-  //Temperature in retard units
+  cTemp := (175.72 * (bytes_si7006_temp[0] * 256.0+ bytes_si7006_temp[1]) / 65536.0) - 46.85
+  log "Temperature is $(%3.2f (cTemp) ) [C]"
+
   fTemp := cTemp * 1.8 + 32
-  log "Temperature is $(%3.1f (fTemp) ) [F]"
+  log "Temperature is $(%3.2f (fTemp) ) [F]"
+  
   relay.set 0
