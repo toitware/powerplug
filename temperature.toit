@@ -31,18 +31,11 @@ class SI7006A20:
 
   SI7006A20 .device_:
   
-  // Read 32 bytes from a given register and return a byte array
-  register_read address mode-> ByteArray:
-    n_bytes_to_read := 2
-    command_array := ByteArray 2
+  read_temperature -> ByteArray:
+    return device_.read_bytes 0xE3 2
 
-    command_array[0] =  address          // Header byte
-    command_array[1] = mode //Si7006_MEAS_TEMP_NO_MASTER_MODE            // Number of bytes in frame
-
-    log "command array single address"
-    log command_array
-    //device_.write_bytes command_array      // Execute command
-    return device_.read_bytes mode n_bytes_to_read // Return bytes*/
+  read_humidity -> ByteArray:
+    return device_.read_bytes 0xE7 2
 
 main:
   // Set pins for connection to device
@@ -68,20 +61,23 @@ main:
   // Read output registers
   si7006a20 := SI7006A20 device
   log "Read output registers"
-
+  sleep 3000
   /* Stopped working at some point*/
   //Humidity
-  bytes_si7006_hum := si7006a20.register_read Si7006_ADDR Si7006_READ_HUMIDITY_TEMP_CONTR
-  log bytes_si7006_hum
+  bytes_si7006_hum := si7006a20.read_humidity
+  //log bytes_si7006_hum
   sleep (10)
    //Convert the data
   humidity := (125.0 * (bytes_si7006_hum[0] * 256.0 + bytes_si7006_hum[1]) / 65536.0) - 6.0
   log "Humidity is $(%3.1f (humidity) ) [%]"
-  
+  sleep 100
+  log si7006a20.read_temperature
 
+  sleep 100
+  //log si7006a20.read_humidity
   //Temperature
-  bytes_si7006_temp := si7006a20.register_read Si7006_ADDR Si7006_MEAS_TEMP_MASTER_MODE
-  log bytes_si7006_temp
+  bytes_si7006_temp := si7006a20.read_temperature
+  //log bytes_si7006_temp
   sleep (10)
   cTemp := (175.72 * (bytes_si7006_temp[0] * 256.0+ bytes_si7006_temp[1]) / 65536.0) - 46.85
   log "Temperature is $(%3.1f (cTemp) ) [C]"
@@ -89,4 +85,4 @@ main:
   //Temperature in retard units
   fTemp := cTemp * 1.8 + 32
   log "Temperature is $(%3.1f (fTemp) ) [F]"
-  relay.set 1
+  relay.set 0
