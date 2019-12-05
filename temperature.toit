@@ -30,20 +30,26 @@ class SI7006A20:
   device_ := null
 
   SI7006A20 .device_:
-  
+
   read_temperature -> ByteArray:
     commands := ByteArray 1
     commands[0] = 0xF3
     device_.write commands
-    sleep 1000
+    sleep 25
     return device_.read 2
 
   read_humidity -> ByteArray:
     commands := ByteArray 1
     commands[0] = 0xF5
     device_.write commands
-    sleep 2000
+    sleep 25
     return device_.read 2
+  
+  reset_:
+    commands := ByteArray 1
+    commands[0] = 0xFE
+    device_.write commands
+    sleep 150
 
 main:
   // Set pins for connection to device
@@ -60,18 +66,21 @@ main:
   sleep 1000
 
   si7006a20 := SI7006A20 (i2c.connect Si7006_ADDR)
-  sleep 1
+
+  si7006a20.reset_
 
   bytes_si7006_hum := si7006a20.read_humidity
   log bytes_si7006_hum
-  humidity := (125.0 * (bytes_si7006_hum[0] * 256.0 + bytes_si7006_hum[1]) / 65536.0) - 6.0
+  // humidity := (125.0 * ((bytes_si7006_hum[0] << 8) + bytes_si7006_hum[1]) / 65536.0) - 6.0
+  humidity:= (((((bytes_si7006_hum[0] & 0xFF) * 256.0) + (bytes_si7006_hum[1] & 0xFF)) * 125.0) / 65536.0) - 6
+  //humidity := (((((bytes_si7006_hum[0] & 0xFF) * 256.0) + (bytes_si7006_hum[1] & 0xFF)) * 125.0) / 65536.0) - 6.0
   log "Humidity is $(%3.5f (humidity) ) [%]"
   sleep 100
 
   bytes_si7006_temp := si7006a20.read_temperature
   log bytes_si7006_temp
 
-  cTemp := (175.72 * (bytes_si7006_temp[0] * 256.0+ bytes_si7006_temp[1]) / 65536.0) - 46.85
+  cTemp := (175.72 * (bytes_si7006_temp[0] * 256.0 + bytes_si7006_temp[1]) / 65536.0) - 46.85
   log "Temperature is $(%3.2f (cTemp) ) [C]"
 
   fTemp := cTemp * 1.8 + 32
