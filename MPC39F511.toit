@@ -9,15 +9,37 @@ class MCP39F521:
   MCP39F521 .device_:
   
   // Read 32 bytes from a given register and return a byte array
-  register_read address_high address_low -> ByteArray:
+  register_read_stats -> ByteArray:
     n_bytes_to_read := 32
     command_array := ByteArray 8
 
     command_array[0] = 0xA5             // Header byte
     command_array[1] = 0x08             // Number of bytes in frame
     command_array[2] = 0x41             // Set address pointer
-    command_array[3] = address_high     // Address high
-    command_array[4] = address_low      // Address low
+    command_array[3] = 0x00     // Address high
+    command_array[4] = 0x02      // Address low
+    command_array[5] = 0x4E             // Register read, n bytes
+    command_array[6] = 0x20             // Number of bytes to read (32)
+    checksum := 0x00
+    for i := 0; i < 7; i++:
+      checksum += command_array[i]
+    
+    checksum = checksum % 256
+    command_array[7] = checksum         // Checksum
+
+    device_.write command_array         // Execute command
+    sleep 50
+    return device_.read n_bytes_to_read + 3   // Return bytes
+
+  register_read_accum -> ByteArray:
+    n_bytes_to_read := 32
+    command_array := ByteArray 8
+
+    command_array[0] = 0xA5             // Header byte
+    command_array[1] = 0x08             // Number of bytes in frame
+    command_array[2] = 0x41             // Set address pointer
+    command_array[3] = 0x00     // Address high
+    command_array[4] = 0x1E      // Address low
     command_array[5] = 0x4E             // Register read, n bytes
     command_array[6] = 0x20             // Number of bytes to read (32)
     checksum := 0x00
@@ -32,7 +54,7 @@ class MCP39F521:
     return device_.read n_bytes_to_read + 3   // Return bytes
 
   // Write to energy accumulation register
-  set_energy_accumulation value:
+  set_energy_accumulation value/bool -> none:
     n_bytes_to_write := 2
     command_array := ByteArray 10
 
@@ -86,7 +108,7 @@ main:
   sleep 500
   mcp.set_energy_accumulation true // Start accumulating
   while i < 16:
-    mcp_stats := mcp.register_read 0x00 0x02
+    mcp_stats := mcp.register_read_stats
     //log "status $((binary.LittleEndian mcp_stats).uint16 2)"
     //log "version $((binary.LittleEndian mcp_stats).uint16 4)"
     //$(%5.2f
@@ -100,7 +122,7 @@ main:
     log "apparent power $(%5.2f ((binary.LittleEndian mcp_stats).uint32 26) / 100.0) Watt"
     log "---"
     sleep 1000
-    mcp_accumulation := mcp.register_read 0x00 0x1E
+    mcp_accumulation := mcp.register_read_accum
     log "Import active energy accumulation $(%5.6f ((binary.LittleEndian mcp_accumulation).uint32 2) / 1000000.0) kWh"
     log "The energy cost is $(%5.6f ((binary.LittleEndian mcp_accumulation).uint32 2) / 1000000.0*1.4) DKK"
     //log "Export Active Energy Counter $(((binary.LittleEndian mcp_accumulation).int64 10))"
