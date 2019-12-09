@@ -11,21 +11,25 @@ class SI7006A20:
   // TODO: Add default connection to 0x40
   SI7006A20 .device_:
     
-  read_temperature -> ByteArray:
+  read_temperature -> Float:
     commands := ByteArray 1
     commands[0] = 0xF3
     device_.write commands
     sleep 25
-    return device_.read 2
+    temp_response := device_.read 2
+    cTemp := (175.72 * (temp_response[0] * 256.0 + temp_response[1]) / 65536.0) - 46.85
+    return cTemp
 
-  read_humidity -> ByteArray:
+  read_humidity -> Float:
     commands := ByteArray 1
     commands[0] = 0xF5
     device_.write commands
     sleep 25
-    return device_.read 2
+    hum_response := device_.read 2
+    humidity := (125.0 * (hum_response[0] * 256.0 + hum_response[1]) / 65536.0) - 6.0	    
+    return humidity
   
-  reset_:
+  reset_ -> none:
     commands := ByteArray 1
     commands[0] = 0xFE
     device_.write commands
@@ -46,28 +50,13 @@ main:
   sleep 1000
 
   si7006a20 := SI7006A20 (i2c.connect 0x40)
-
   si7006a20.reset_
+
   i := 0
   while i < 10:
-    bytes_si7006_hum := si7006a20.read_humidity
-    log bytes_si7006_hum
-    //humidity := ((125.0 * ((bytes_si7006_hum[0] * 256.0) + bytes_si7006_hum[1])) / 65536.0) - 6.0
-    humidity := (125.0 * (bytes_si7006_hum[0] * 256.0 + bytes_si7006_hum[1]) / 65536.0) - 6.0	    
-    log "Humidity is $(%3.5f (humidity) ) [%]"
-
-    metrics.gauge "powerswitch_humidity" (humidity as Float)
-    
-    sleep 100
-
-    bytes_si7006_temp := si7006a20.read_temperature
-    log bytes_si7006_temp
-
-    cTemp := (175.72 * (bytes_si7006_temp[0] * 256.0 + bytes_si7006_temp[1]) / 65536.0) - 46.85
-    log "Temperature is $(%3.2f (cTemp) ) [C]"
-
-    fTemp := cTemp * 1.8 + 32
-    log "Temperature is $(%3.2f (fTemp) ) [F]"
+    log "logging metrics"
+    metrics.gauge "powerswitch_humidity" si7006a20.read_humidity
+    metrics.gauge "powerswitch_temperature" si7006a20.read_temperature
     i += 1
-  
+
   relay.set 0
