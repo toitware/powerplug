@@ -30,7 +30,7 @@ class MCP39F521:
     command_array[7] = checksum         // Checksum
 
     device_.write command_array         // Execute command
-    sleep 50
+    sleep 20
     return device_.read n_bytes_to_read + 3   // Return bytes
 
   register_read_accum -> none:
@@ -52,7 +52,7 @@ class MCP39F521:
     command_array[7] = checksum         // Checksum
 
     device_.write command_array         // Execute command
-    sleep 50
+    sleep 20
 
     mcp_accumulation := device_.read n_bytes_to_read + 3   // Return bytes
 

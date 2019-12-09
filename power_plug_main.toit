@@ -31,32 +31,32 @@ main:
   while i < 60:
     
     /* Read and upload humidity*/
-    si_device.read_humidity
+    si_device.read_humidity //sleep 20
 
     /*Read and upload temperature */
-    si_device.read_temperature
+    si_device.read_temperature //sleep 20
     
     log "---"
     
     sleep 20
 
     /* Electrical circuit, read register and upload it to grafana*/
-    mcp_device.upload_register_stats (mcp_device.register_read_stats)
+    mcp_device.upload_register_stats (mcp_device.register_read_stats) //sleep 20
     
     log "---"
 
     sleep 20
     /* Read accumulation register and push it to grafana */
-    mcp_device.register_read_accum
+    mcp_device.register_read_accum //sleep 20
     
     log "------"
     log ""
 
-    sleep 60000
+    sleep 59880
     i += 1
   
+  /* Turning device off */
   mcp_device.set_energy_accumulation false // Turn off energy accumulation
-
   sleep 50
   relay.set 0                              // Turn off relay
   sleep 100

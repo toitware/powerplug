@@ -15,7 +15,7 @@ class SI7006A20:
     commands := ByteArray 1
     commands[0] = 0xF3
     device_.write commands
-    sleep 25
+    sleep 20
     temp_response := device_.read 2
     temperature := (175.72 * (temp_response[0] * 256.0 + temp_response[1]) / 65536.0) - 46.85
     metrics.gauge "powerswitch_temperature" temperature
@@ -25,7 +25,7 @@ class SI7006A20:
     commands := ByteArray 1
     commands[0] = 0xF5
     device_.write commands
-    sleep 25
+    sleep 20
     hum_response := device_.read 2
     humidity := (125.0 * (hum_response[0] * 256.0 + hum_response[1]) / 65536.0) - 6.0	    
     metrics.gauge "powerswitch_humidity" humidity
