@@ -32,7 +32,6 @@ class SI7006A20:
     sleep 150
 
 main:
-  metrics.gauge "test42" 1.0 
   // Set pins for connection to device
   i2c := i2c.I2C
     400_000
@@ -56,6 +55,9 @@ main:
     //humidity := ((125.0 * ((bytes_si7006_hum[0] * 256.0) + bytes_si7006_hum[1])) / 65536.0) - 6.0
     humidity := (125.0 * (bytes_si7006_hum[0] * 256.0 + bytes_si7006_hum[1]) / 65536.0) - 6.0	    
     log "Humidity is $(%3.5f (humidity) ) [%]"
+
+    metrics.gauge "powerswitch_humidity" (humidity as Float)
+    
     sleep 100
 
     bytes_si7006_temp := si7006a20.read_temperature
