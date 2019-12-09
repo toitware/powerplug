@@ -86,7 +86,7 @@ main:
     log "Import active energy accumulation $(%5.6f active_energy_accu) kWh"
     metrics.gauge "powerswitch_active_energy_accu" active_energy_accu
     
-    energy_cost := ((binary.LittleEndian mcp_accumulation).uint32 2) / 1000000.0*1.4
+    energy_cost := active_energy_accu * 1.4
     log "The energy cost is $(%5.6f energy_cost) DKK"
     metrics.gauge "powerswitch_energy_cost" energy_cost
     
