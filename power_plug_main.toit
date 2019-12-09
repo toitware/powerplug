@@ -17,46 +17,37 @@ main:
   relay := gpio.Pin RELAY_PIN
   relay.configure gpio.OUTPUT_CONF
   relay.set 1
-  
-  
+
   i2c := I2C
     FREQUENCY
     gpio.Pin SDA
     gpio.Pin SCL
   
-  mcp_device := MCP39F521 (i2c.connect ENERGY_DEVICE) //electrical measurements
-  
-  si_device := SI7006A20 (i2c.connect TH_DEVICE) //temperature and humidity
+  si_device := SI7006A20 (i2c.connect TH_DEVICE)      // Temperature and humidity
+  mcp_device := MCP39F521 (i2c.connect ENERGY_DEVICE) // Electrical measurements
   
   sleep 100
-  mcp_device.set_energy_accumulation false // Make sure there are no previous values in the registers
+  mcp_device.set_energy_accumulation false            // Make sure there are no previous values in the registers
   sleep 100
-  mcp_device.set_energy_accumulation true // Start accumulating
+  mcp_device.set_energy_accumulation true             // Start accumulating
   sleep 50
 
   i := 0
   while i < 2:
     
-    //temperature and humidity
-    
-    //bytes_si7006_hum := si_device.read_humidity
-    //log bytes_si7006_hum
-    //humidity := (125.0 * (bytes_si7006_hum[0] * 256.0 + bytes_si7006_hum[1]) / 65536.0) - 6.0
+    /* Temperature and humidity */
     humidity := si_device.read_humidity
     metrics.gauge "powerswitch_humidity" humidity
     log "Humidity is $(%3.5f (humidity) ) [%]"
+
     sleep 10
 
-    //bytes_si7006_temp := si_device.read_temperature
-    //log bytes_si7006_temp
-
-    //cTemp := (175.72 * (bytes_si7006_temp[0] * 256.0 + bytes_si7006_temp[1]) / 65536.0) - 46.85
     temperature := si_device.read_temperature
     log "Temperature is $(%3.2f (temperature) ) [C]"
     metrics.gauge "powerswitch_temperature" temperature
     log "---"
 
-    //electrical cirquit
+    /* Electrical circuit */
     mcp_stats := mcp_device.register_read_stats
 
     voltage_rms := (((binary.LittleEndian mcp_stats).uint16 6) / 10.0)
@@ -95,11 +86,9 @@ main:
     log "Import active energy accumulation $(%5.6f active_energy_accu) kWh"
     metrics.gauge "powerswitch_active_energy_accu" active_energy_accu
     
-    
     energy_cost := ((binary.LittleEndian mcp_accumulation).uint32 2) / 1000000.0*1.4
     log "The energy cost is $(%5.6f energy_cost) DKK"
     metrics.gauge "powerswitch_energy_cost" energy_cost
-    
     
     reactive_energy_accu := ((binary.LittleEndian mcp_accumulation).uint32 18) / 1000000.0
     log "Import reactive energy accumulation $(%5.6f reactive_energy_accu) kWh"
@@ -109,9 +98,8 @@ main:
      
     i += 1
   
-  mcp_device.set_energy_accumulation false
+  mcp_device.set_energy_accumulation false // Turn off energy accumulation
 
   sleep 50
-  relay.set 0
+  relay.set 0                              // Turn off relay
   sleep 100
-
