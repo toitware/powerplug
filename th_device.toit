@@ -3,36 +3,37 @@ import binary
 import i2c
 import gpio
 import serial
-import metrics
+
+RESET ::= 0xFE
+READ_TEMPERATURE ::= 0xF3
+READ_HUMIDITY ::= 0xF5
 
 class SI7006A20:
   device_ := null
 
-  // TODO: Add default connection to 0x40
   SI7006A20 .device_:
-    
-  read_temperature -> none:
+    this.reset_
+
+  read_temperature -> float:
     commands := ByteArray 1
-    commands[0] = 0xF3
+    commands[0] = READ_TEMPERATURE
     device_.write commands
     sleep 20
     temp_response := device_.read 2
     temperature := (175.72 * (temp_response[0] * 256.0 + temp_response[1]) / 65536.0) - 46.85
-    metrics.gauge "powerswitch_temperature" temperature
-    log "Temperature is $(%3.2f (temperature) ) [C]"
+    return temperature
 
-  read_humidity -> none:
+  read_humidity -> float:
     commands := ByteArray 1
-    commands[0] = 0xF5
+    commands[0] = READ_HUMIDITY
     device_.write commands
     sleep 20
     hum_response := device_.read 2
     humidity := (125.0 * (hum_response[0] * 256.0 + hum_response[1]) / 65536.0) - 6.0	    
-    metrics.gauge "powerswitch_humidity" humidity
-    log "Humidity is $(%3.5f (humidity) ) [%]"
+    return humidity
   
   reset_ -> none:
     commands := ByteArray 1
-    commands[0] = 0xFE
+    commands[0] = RESET
     device_.write commands
     sleep 150
