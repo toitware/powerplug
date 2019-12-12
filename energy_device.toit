@@ -8,7 +8,6 @@ class MCP39F521:
   device_ := null
   
   MCP39F521 .device_:
-    this.reset_energy_accumulation
     
   // Read 32 bytes from a given register and return a byte array
   register_read_stats -> Map:
