@@ -14,6 +14,7 @@ class SI7006A20:
   SI7006A20 .device_:
     this.reset_
 
+  // Read last temperature measurement
   read_temperature -> float:
     commands := ByteArray 1
     commands[0] = READ_TEMPERATURE
@@ -23,6 +24,7 @@ class SI7006A20:
     temperature := (175.72 * (temp_response[0] * 256.0 + temp_response[1]) / 65536.0) - 46.85
     return temperature
 
+  // Read last humidity measurement
   read_humidity -> float:
     commands := ByteArray 1
     commands[0] = READ_HUMIDITY
@@ -32,6 +34,7 @@ class SI7006A20:
     humidity := (125.0 * (hum_response[0] * 256.0 + hum_response[1]) / 65536.0) - 6.0	    
     return humidity
   
+  // Reset measurements
   reset_ -> none:
     commands := ByteArray 1
     commands[0] = RESET

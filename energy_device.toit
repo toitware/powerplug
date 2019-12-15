@@ -9,7 +9,7 @@ class MCP39F521:
   
   MCP39F521 .device_:
     
-  // Read 32 bytes from a given register and return a byte array
+  // Read current stats
   register_read_stats -> Map:
     n_bytes_to_read := 32
     command_array := ByteArray 8
@@ -51,6 +51,7 @@ class MCP39F521:
             "reactive_power": reactive_power, 
             "apparent_power": apparent_power}
 
+  // Read energy accumulation info
   register_read_accum -> Map:
     n_bytes_to_read := 32
     command_array := ByteArray 8
@@ -110,6 +111,7 @@ class MCP39F521:
 
     device_.write command_array
   
+  // Reset energy accumulation
   reset_energy_accumulation -> none:
     this.set_energy_accumulation false
     sleep 50
