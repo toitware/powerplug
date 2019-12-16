@@ -2,6 +2,7 @@ import gpio
 
 main: 
  
+  //Configure GPIO pins for LEDs and ON/OFF button
   green := gpio.Pin 22
   green.configure gpio.OUTPUT_CONF
 
@@ -16,18 +17,12 @@ main:
 
 
   while true:
+   //Red LED on to indicate OFF relay
    green.set 0
-   /*
-   if blue == 0:
-     red.set 1
-   else:
-     red.set 0
-     */
-   red.set 1
-     
+   red.set 1  
    relay.set 0
    
-  //Wait for edge to turn it on
+  //Wait for edge to turn relay and LED on
    button.wait_for 0
    sleep 100
    button.wait_for 1

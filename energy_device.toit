@@ -4,6 +4,28 @@ import modules.i2c show *
 import gpio
 import metrics
 
+//Communication configuration parameters
+HEADER_BYTE                := 0xA5
+NR_OF_BYTES_IN_FRAME       := 0x08
+SET_ADDRESS_POINTER        := 0x41
+REG_READ_N_BYTES           := 0x4E
+NR_OF_BYTES_TO_READ        := 0x20
+
+//Address bytes to read current stats
+ADDR_HIGH                  := 0x00
+ADDR_LOW                   := 0x02
+
+//Address bytes to read accumulated stats
+ADDR_HIGH_ACCU             := 0x00
+ADDR_LOW_ACCU              := 0x1E
+
+//Parameters to write to energy accumulation register 
+NR_OF_BYTES_IN_WRITE_FRAME := 0x0A
+ADDR_HIGH_WRITE            := 0x00
+ADDR_LOW_WRITE             := 0xDC
+REG_WRITE_N_BYTES          := 0x4D
+NR_OF_BYTES_TO_WRITE       := 0x02
+
 class MCP39F521:
   device_ := null
   
@@ -14,20 +36,20 @@ class MCP39F521:
     n_bytes_to_read := 32
     command_array := ByteArray 8
 
-    command_array[0] = 0xA5             // Header byte
-    command_array[1] = 0x08             // Number of bytes in frame
-    command_array[2] = 0x41             // Set address pointer
-    command_array[3] = 0x00             // Address high
-    command_array[4] = 0x02             // Address low
-    command_array[5] = 0x4E             // Register read, n bytes
-    command_array[6] = 0x20             // Number of bytes to read (32)
+    command_array[0] = HEADER_BYTE
+    command_array[1] = NR_OF_BYTES_IN_FRAME
+    command_array[2] = SET_ADDRESS_POINTER
+    command_array[3] = ADDR_HIGH
+    command_array[4] = ADDR_LOW
+    command_array[5] = REG_READ_N_BYTES
+    command_array[6] = NR_OF_BYTES_TO_READ
     
     checksum := 0x00
     for i := 0; i < 7; i++:
       checksum += command_array[i]
 
     checksum = checksum % 256
-    command_array[7] = checksum
+    command_array[7] = checksum //Last byte of the command array is a checksum
 
     device_.write command_array         // Execute command
 
@@ -56,13 +78,13 @@ class MCP39F521:
     n_bytes_to_read := 32
     command_array := ByteArray 8
 
-    command_array[0] = 0xA5                    // Header byte
-    command_array[1] = 0x08                    // Number of bytes in frame
-    command_array[2] = 0x41             // Set address pointer
-    command_array[3] = 0x00             // Address high
-    command_array[4] = 0x1E             // Address low
-    command_array[5] = 0x4E             // Register read, n bytes
-    command_array[6] = 0x20             // Number of bytes to read (32)
+    command_array[0] = HEADER_BYTE
+    command_array[1] = NR_OF_BYTES_IN_FRAME
+    command_array[2] = SET_ADDRESS_POINTER
+    command_array[3] = ADDR_HIGH_ACCU
+    command_array[4] = ADDR_LOW_ACCU
+    command_array[5] = REG_READ_N_BYTES
+    command_array[6] = NR_OF_BYTES_TO_READ
     checksum := 0x00
     for i := 0; i < 7; i++:
       checksum += command_array[i]
@@ -88,13 +110,13 @@ class MCP39F521:
     n_bytes_to_write := 2
     command_array := ByteArray 10
 
-    command_array[0] = 0xA5             // Header byte
-    command_array[1] = 0x0A             // Number of bytes in frame
-    command_array[2] = 0x41             // Set address pointer
-    command_array[3] = 0x00             // Address high
-    command_array[4] = 0xDC             // Energy accumulation control register
-    command_array[5] = 0x4D             // Register write, n bytes
-    command_array[6] = 0x02             // Number of bytes to write (2)
+    command_array[0] = HEADER_BYTE
+    command_array[1] = NR_OF_BYTES_IN_WRITE_FRAME
+    command_array[2] = SET_ADDRESS_POINTER
+    command_array[3] = ADDR_HIGH_WRITE
+    command_array[4] = ADDR_LOW_WRITE
+    command_array[5] = REG_WRITE_N_BYTES
+    command_array[6] = NR_OF_BYTES_TO_WRITE
     command_array[7] = 0x00             
       
     if value:                           // Reset or start energy accumulation

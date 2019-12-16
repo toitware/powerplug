@@ -10,7 +10,7 @@ READ_HUMIDITY ::= 0xF5
 
 class SI7006A20:
   device_ := null
-  t_calib_coef := null
+  t_calib_coef := null // calibration coefficient for exponential approximation of temperature change in the chip
 
   SI7006A20 .device_:
     this.reset_

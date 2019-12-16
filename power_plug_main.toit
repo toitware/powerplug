@@ -1,20 +1,19 @@
 import .energy_device show *
 import .th_device show *
-import .led show *
 import modules.i2c show *
 import gpio
 import metrics
 import binary
 import esp.esp32 show *
 
-RELAY_PIN ::= 2
-BLUE_PIN ::= 21
-GREEN_PIN ::= 22
-FREQUENCY ::= 400_000
-SDA ::= 17
-SCL ::= 16
+RELAY_PIN     ::= 2
+BLUE_PIN      ::= 21
+GREEN_PIN     ::= 22
+FREQUENCY     ::= 400_000
+SDA           ::= 17
+SCL           ::= 16
 ENERGY_DEVICE ::= 0x74
-TH_DEVICE ::= 0x40
+TH_DEVICE     ::= 0x40
 
 main:
 
@@ -47,7 +46,7 @@ main:
     
     sleep 20
 
-    // Current electrial measurements
+    // Print and gauge to grafana current electrial measurements
     power_stats := energy_device.register_read_stats
     log "voltage rms $(%3.1f power_stats.get("voltage_rms")) V"
     metrics.gauge "powerswitch_voltage_rms" (power_stats.get("voltage_rms"))
@@ -74,13 +73,10 @@ main:
     sleep 20
 
 
-    // Accumulation measurements
+    // Print and gauge to grafana accumulation measurements
     accumulation := energy_device.register_read_accum
     log "Import active energy accumulation $(%5.6f accumulation.get("active_energy_accumulation")) kWh"
     metrics.gauge "powerswitch_active_energy_accu" (accumulation.get("active_energy_accumulation"))
-    
-    //If first gauge past we should set led to blue
-    blue.set 1
     
     log "The energy cost is $(%5.6f accumulation.get("energy_cost")) DKK"
     metrics.gauge "powerswitch_energy_cost" (accumulation.get("energy_cost"))
@@ -89,7 +85,11 @@ main:
     metrics.gauge "powerswitch_reactive_energy_accu" (accumulation.get("reactive_energy_accumulation"))
     log "------"
     log ""
-    sleep 59880
+    
+    //If first gauge past we should set led to blue to indicate that device is uploading
+    blue.set 1
+    
+    sleep 59880 //Wait until next minute
     i += 1
 
   sleep 100
