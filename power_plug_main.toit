@@ -17,50 +17,29 @@ ENERGY_DEVICE ::= 0x74
 TH_DEVICE ::= 0x40
 
 main:
-  blue_led := Led (gpio.Pin BLUE_PIN)
-  green_led := Led (gpio.Pin GREEN_PIN)
-  blue_led.on
 
   i2c := I2C
     FREQUENCY
     gpio.Pin SDA
     gpio.Pin SCL
 
-  button := Button 0
-
-  relay := gpio.Pin RELAY_PIN
-  relay.configure gpio.OUTPUT_CONF
-
+  blue := gpio.Pin 21
+  blue.configure gpio.OUTPUT_CONF
+  blue.set 0
 
   th_device := SI7006A20 (i2c.connect TH_DEVICE)           // Temperature and humidity
   energy_device := MCP39F521 (i2c.connect ENERGY_DEVICE)   // Electrical measurements
 
-  
-  /* measure_start := false
-  measure := false
-  while measure_start == false:
-  if button.on_press 0:
-    measure_start = true
-
-  if measure_start:
-    sleep 100
-    blue_led.off
-    sleep 1
-    green_led.on
-    sleep 1
-    relay.set 1
-    sleep 500
-    measure = true
-    energy_device.reset_energy_accumulation */
 
   i := 0
-  while i < 10:
+  while i < 60:
+    
     // Humidity and temperature measurements 
     humidity := th_device.read_humidity
     metrics.gauge "powerswitch_humidity" humidity
     log "Humidity is $(%3.2f (humidity) ) %"
 
-    temperature := th_device.read_humidity
+    temperature := th_device.read_temperature
     metrics.gauge "powerswitch_temperature" temperature
     log "Temperature is $(%3.2f (temperature) )˚C"
 
@@ -100,6 +79,9 @@ main:
     log "Import active energy accumulation $(%5.6f accumulation.get("active_energy_accumulation")) kWh"
     metrics.gauge "powerswitch_active_energy_accu" (accumulation.get("active_energy_accumulation"))
     
+    //If first gauge past we should set led to blue
+    blue.set 1
+    
     log "The energy cost is $(%5.6f accumulation.get("energy_cost")) DKK"
     metrics.gauge "powerswitch_energy_cost" (accumulation.get("energy_cost"))
     
@@ -107,20 +89,11 @@ main:
     metrics.gauge "powerswitch_reactive_energy_accu" (accumulation.get("reactive_energy_accumulation"))
     log "------"
     log ""
-    //sleep 59880
-    sleep 10
-    /* if button.on 0 button.last_event:
-      measure = false */
+    sleep 59880
     i += 1
 
-  sleep 1
-  green_led.off
-  blue_led.on
   sleep 100
-
+  blue.set 0
   // Turning device off
   energy_device.set_energy_accumulation false
   sleep 50
-  relay.set 0
-  sleep 100
-  blue_led.off
