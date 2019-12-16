@@ -10,9 +10,11 @@ READ_HUMIDITY ::= 0xF5
 
 class SI7006A20:
   device_ := null
+  t_calib_coef := null
 
   SI7006A20 .device_:
     this.reset_
+    t_calib_coef = 1
 
   // Read last temperature measurement
   read_temperature -> float:
@@ -21,7 +23,9 @@ class SI7006A20:
     device_.write commands
     sleep 20
     temp_response := device_.read 2
-    temperature := (175.72 * (temp_response[0] * 256.0 + temp_response[1]) / 65536.0) - 46.85
+    temperature_measured := (175.72 * (temp_response[0] * 256.0 + temp_response[1]) / 65536.0) - 46.85
+    t_calib_coef = 0.8*t_calib_coef
+    temperature := temperature_measured - 12.05 + t_calib_coef
     return temperature
 
   // Read last humidity measurement
