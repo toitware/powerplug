@@ -3,18 +3,18 @@ import .th_device show *
 import .led show *
 import modules.i2c show *
 import gpio
+import esp.esp32 show *
 import metrics
 import binary
-import esp.esp32 show *
 
-RELAY_PIN ::= 2
-BLUE_PIN ::= 21
-GREEN_PIN ::= 22
-FREQUENCY ::= 400_000
-SDA ::= 17
-SCL ::= 16
-ENERGY_DEVICE ::= 0x74
-TH_DEVICE ::= 0x40
+RELAY_PIN      ::= 2
+BLUE_PIN       ::= 21
+GREEN_PIN      ::= 22
+FREQUENCY      ::= 400_000
+SDA            ::= 17
+SCL            ::= 16
+ENERGY_DEVICE  ::= 0x74
+TH_DEVICE      ::= 0x40
 
 main:
   blue_led := Led (gpio.Pin BLUE_PIN)
@@ -26,41 +26,30 @@ main:
     gpio.Pin SDA
     gpio.Pin SCL
 
-  button := Button 0
-
+  button := gpio.Pin 0
+  button.configure gpio.INPUT_CONF
+  
   relay := gpio.Pin RELAY_PIN
   relay.configure gpio.OUTPUT_CONF
-
 
   th_device := SI7006A20 (i2c.connect TH_DEVICE)           // Temperature and humidity
   energy_device := MCP39F521 (i2c.connect ENERGY_DEVICE)   // Electrical measurements
 
-  
-  /* measure_start := false
-  measure := false
-  while measure_start == false:
-  if button.on_press 0:
-    measure_start = true
+  button.wait_for 0
+  blue_led.off
+  sleep 1
+  green_led.on
+  relay.set 1
+  sleep 500
+  energy_device.reset_energy_accumulation
 
-  if measure_start:
-    sleep 100
-    blue_led.off
-    sleep 1
-    green_led.on
-    sleep 1
-    relay.set 1
-    sleep 500
-    measure = true
-    energy_device.reset_energy_accumulation */
-
-  i := 0
-  while i < 10:
+  while button.get == 1:
     // Humidity and temperature measurements 
     humidity := th_device.read_humidity
     metrics.gauge "powerswitch_humidity" humidity
     log "Humidity is $(%3.2f (humidity) ) %"
 
-    temperature := th_device.read_humidity
+    temperature := th_device.read_temperature
     metrics.gauge "powerswitch_temperature" temperature
     log "Temperature is $(%3.2f (temperature) )˚C"
 
@@ -109,9 +98,6 @@ main:
     log ""
     //sleep 59880
     sleep 10
-    /* if button.on 0 button.last_event:
-      measure = false */
-    i += 1
 
   sleep 1
   green_led.off

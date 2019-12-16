@@ -1,8 +1,6 @@
 // Copyright (C) 2019 Toitware ApS. All rights reserved.
 import binary
 import modules.i2c show *
-import gpio
-import metrics
 
 class MCP39F521:
   device_ := null
@@ -13,7 +11,7 @@ class MCP39F521:
   register_read_stats -> Map:
     n_bytes_to_read := 32
     command_array := ByteArray 8
-
+    // Setup command
     command_array[0] = 0xA5             // Header byte
     command_array[1] = 0x08             // Number of bytes in frame
     command_array[2] = 0x41             // Set address pointer
@@ -29,11 +27,12 @@ class MCP39F521:
     checksum = checksum % 256
     command_array[7] = checksum
 
-    device_.write command_array         // Execute command
-
+    // Send command
+    device_.write command_array
     sleep 20
 
-    results := device_.read n_bytes_to_read + 3   // Return bytes
+    // Read results
+    results := device_.read n_bytes_to_read + 3
     
     voltage_rms := ((binary.LittleEndian results).uint16 6) / 10.0
     line_freq := ((binary.LittleEndian results).uint16 8) / 1000.0
@@ -55,9 +54,9 @@ class MCP39F521:
   register_read_accum -> Map:
     n_bytes_to_read := 32
     command_array := ByteArray 8
-
-    command_array[0] = 0xA5                    // Header byte
-    command_array[1] = 0x08                    // Number of bytes in frame
+    // Setup command
+    command_array[0] = 0xA5             // Header byte
+    command_array[1] = 0x08             // Number of bytes in frame
     command_array[2] = 0x41             // Set address pointer
     command_array[3] = 0x00             // Address high
     command_array[4] = 0x1E             // Address low
@@ -68,11 +67,13 @@ class MCP39F521:
       checksum += command_array[i]
     
     checksum = checksum % 256
-    command_array[7] = checksum         // Checksum
+    command_array[7] = checksum
 
-    device_.write command_array         // Execute command
+    // Send command
+    device_.write command_array 
     sleep 20
 
+    // Read results
     results := device_.read n_bytes_to_read + 3  
 
     active_energy_accu := ((binary.LittleEndian results).uint32 2) / 1000000.0
@@ -84,10 +85,10 @@ class MCP39F521:
             "reactive_energy_accumulation": reactive_energy_accu}
 
   // Write to energy accumulation register
-  set_energy_accumulation value/bool -> none:
+  set_energy_accumulation on/bool -> none:
     n_bytes_to_write := 2
     command_array := ByteArray 10
-
+    // Setup command
     command_array[0] = 0xA5             // Header byte
     command_array[1] = 0x0A             // Number of bytes in frame
     command_array[2] = 0x41             // Set address pointer
@@ -97,7 +98,7 @@ class MCP39F521:
     command_array[6] = 0x02             // Number of bytes to write (2)
     command_array[7] = 0x00             
       
-    if value:                           // Reset or start energy accumulation
+    if on:                              // Reset or start energy accumulation
       command_array[8] = 0x01         
     else:                               // Stop energy accumulation  
       command_array[8] = 0x00
@@ -109,6 +110,7 @@ class MCP39F521:
     checksum = checksum % 256
     command_array[9] = checksum
 
+    // Send results
     device_.write command_array
   
   // Reset energy accumulation

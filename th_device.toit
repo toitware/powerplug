@@ -1,12 +1,10 @@
 // Copyright (C) 2019 Toitware ApS. All rights reserved.
 import binary
 import i2c
-import gpio
-import serial
 
-RESET ::= 0xFE
-READ_TEMPERATURE ::= 0xF3
-READ_HUMIDITY ::= 0xF5
+RESET             ::= 0xFE
+READ_TEMPERATURE  ::= 0xF3
+READ_HUMIDITY     ::= 0xF5
 
 class SI7006A20:
   device_ := null
