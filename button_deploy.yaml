@@ -1,0 +1,6 @@
+name: "Button - relay thingy"       
+entrypoint: button.toit
+      
+triggers:     
+     on_boot: false    
+     on_install: true

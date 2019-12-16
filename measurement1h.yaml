@@ -1,0 +1,6 @@
+name: "Measurement 1h"       
+entrypoint: power_plug_main.toit
+
+triggers:     
+     on_boot: false    
+     on_install: true
