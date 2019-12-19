@@ -89,7 +89,6 @@ main:
     blue.set 1
     
     sleep 59880 //Wait until next minute
-    i += 1
 
   sleep 100
   blue.set 0
