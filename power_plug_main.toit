@@ -1,3 +1,4 @@
+// Copyright (C) 2019 Toitware ApS. All rights reserved.
 import .energy_device show *
 import .th_device show *
 import modules.i2c show *
@@ -31,7 +32,7 @@ main:
 
 
   i := 0
-  while i < 60:
+  while i < 600:
     
     // Humidity and temperature measurements 
     humidity := th_device.read_humidity
@@ -89,7 +90,7 @@ main:
     //If first gauge past we should set led to blue to indicate that device is uploading
     blue.set 1
     
-    sleep 59880 //Wait until next minute
+    sleep 29880 //Wait until next minute
     i += 1
 
   sleep 100
