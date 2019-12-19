@@ -30,8 +30,7 @@ main:
   energy_device := MCP39F521 (i2c.connect ENERGY_DEVICE)   // Electrical measurements
 
 
-  i := 0
-  while i < 60:
+  while true:
     
     // Humidity and temperature measurements 
     humidity := th_device.read_humidity
