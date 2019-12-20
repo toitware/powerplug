@@ -2,5 +2,5 @@ name: "Relay ON/OFF with button"
 entrypoint: button.toit
       
 triggers:     
-     on_boot: false    
+     on_boot: true    
      on_install: true

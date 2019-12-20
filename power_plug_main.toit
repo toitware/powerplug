@@ -15,6 +15,13 @@ SCL           ::= 16
 ENERGY_DEVICE ::= 0x74
 TH_DEVICE     ::= 0x40
 
+SAMPLING_TIME := 10000 //Measurement sampling time in ms
+
+//Calibration of temperature unit
+CALIBRATION_OFFSET := 6.8            //Steady offset representing difference between measured temp and real one when equilibrium is reached.
+CALIBRATION_BASE := 0.6              //Base of exponential function approximating heat characteristics. Depends on how fast the device reaches steady state.
+CALIBRATION_OFFSET_TRANSITIONAL := 3 //Offset that will exponentialy decrease in each iteration of measurement. Approximates the heating period of the device
+
 main:
 
   i2c := I2C
@@ -26,9 +33,11 @@ main:
   blue.configure gpio.OUTPUT_CONF
   blue.set 0
 
-  th_device := SI7006A20 (i2c.connect TH_DEVICE)           // Temperature and humidity
+  th_device := SI7006A20 (i2c.connect TH_DEVICE) SAMPLING_TIME CALIBRATION_OFFSET CALIBRATION_BASE CALIBRATION_OFFSET_TRANSITIONAL    // Temperature and humidity
   energy_device := MCP39F521 (i2c.connect ENERGY_DEVICE)   // Electrical measurements
   loop_iteration := 0
+  
+
   while true:
     
     // Humidity and temperature measurements 
@@ -36,9 +45,12 @@ main:
     metrics.gauge "powerswitch_humidity" humidity
     log "Humidity is $(%3.2f (humidity) ) %"
 
-    temperature := th_device.read_temperature
-    metrics.gauge "powerswitch_temperature" temperature
-    log "Temperature is $(%3.2f (temperature) )˚C"
+    temperature_stats := th_device.read_temperature
+    metrics.gauge "powerswitch_temperature_measured" (temperature_stats.get("temperature_measured"))
+    log "Measured temperature is $(%3.2f (temperature_stats.get("temperature_measured")) )˚C"
+    
+    metrics.gauge "powerswitch_temperature_calibrated" (temperature_stats.get("temperature_calibrated"))
+    log "Calibrated temperature is $(%3.2f (temperature_stats.get("temperature_calibrated")) )˚C"
 
     log "---"
     
@@ -88,7 +100,7 @@ main:
     blue.set 1
     loop_iteration +=1
 
-    sleep 59880 //Wait until next minute
+    sleep (SAMPLING_TIME - 120) //Wait until next minute
 
   sleep 100
   blue.set 0

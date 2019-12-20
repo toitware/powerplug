@@ -1,4 +1,4 @@
-name: "Temperature and energy measurement for 1h"       
+name: "Temperature, humidity, energy measurement"       
 entrypoint: power_plug_main.toit
 
 triggers:     
