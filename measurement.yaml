@@ -1,0 +1,6 @@
+name: "Temperature, humidity, energy measurement"       
+entrypoint: power_plug_main.toit
+
+triggers:     
+     on_boot: true    
+     on_install: true
