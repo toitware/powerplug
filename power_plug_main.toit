@@ -1,4 +1,3 @@
-// Copyright (C) 2019 Toitware ApS. All rights reserved.
 import .energy_device show *
 import .th_device show *
 import modules.i2c show *
@@ -29,10 +28,8 @@ main:
 
   th_device := SI7006A20 (i2c.connect TH_DEVICE)           // Temperature and humidity
   energy_device := MCP39F521 (i2c.connect ENERGY_DEVICE)   // Electrical measurements
-
-
-  i := 0
-  while i < 600:
+  loop_iteration := 0
+  while true:
     
     // Humidity and temperature measurements 
     humidity := th_device.read_humidity
@@ -89,9 +86,9 @@ main:
     
     //If first gauge past we should set led to blue to indicate that device is uploading
     blue.set 1
-    
-    sleep 29880 //Wait until next minute
-    i += 1
+    loop_iteration +=1
+
+    sleep 59880 //Wait until next minute
 
   sleep 100
   blue.set 0

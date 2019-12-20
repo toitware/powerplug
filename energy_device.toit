@@ -30,6 +30,7 @@ class MCP39F521:
   device_ := null
   
   MCP39F521 .device_:
+    this.reset_energy_accumulation
     
   // Read current stats
   register_read_stats -> Map:
