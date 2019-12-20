@@ -16,7 +16,7 @@ ENERGY_DEVICE ::= 0x74
 TH_DEVICE     ::= 0x40
 
 SAMPLING_TIME := 1000 //Measurement sampling time in ms
-VERBOSITY := 0
+VERBOSITY := true
 
 //Calibration of temperature unit
 CALIBRATION_OFFSET := 6.8            //Steady offset representing difference between measured temp and real one when equilibrium is reached.
@@ -34,29 +34,26 @@ main:
   blue.configure gpio.OUTPUT_CONF
   blue.set 0
 
-  th_device := SI7006A20 (i2c.connect TH_DEVICE) SAMPLING_TIME CALIBRATION_OFFSET CALIBRATION_BASE CALIBRATION_OFFSET_TRANSITIONAL    // Temperature and humidity
-  energy_device := MCP39F521 (i2c.connect ENERGY_DEVICE)   // Electrical measurements
-<<<<<<< HEAD
-  
-  60.repeat:
-=======
-  loop_iteration := 0
-  
+  th_device := SI7006A20               // Temperature and humidity
+    i2c.connect TH_DEVICE
+    SAMPLING_TIME 
+    CALIBRATION_OFFSET 
+    CALIBRATION_BASE 
+    CALIBRATION_OFFSET_TRANSITIONAL
 
+  energy_device := MCP39F521           // Electrical measurements
+    i2c.connect ENERGY_DEVICE 
+
+  loop_iteration := 0
   while true:
->>>>>>> calibration
     
     // Humidity and temperature measurements 
     humidity := th_device.read_humidity
     metrics.gauge "powerswitch_humidity" humidity
     
-
-    temperature_stats := th_device.read_temperature
-    metrics.gauge "powerswitch_temperature_measured" (temperature_stats.get("temperature_measured"))
-    
-    
-    metrics.gauge "powerswitch_temperature_calibrated" (temperature_stats.get("temperature_calibrated"))
-    
+    temperature := th_device.read_temperature
+    metrics.gauge "powerswitch_temperature_measured" (temperature.get("temperature_measured"))
+    metrics.gauge "powerswitch_temperature_calibrated" (temperature.get("temperature_calibrated"))
     
     sleep 20
 
@@ -78,17 +75,14 @@ main:
     metrics.gauge "powerswitch_energy_cost" (accumulation.get("energy_cost"))
     metrics.gauge "powerswitch_reactive_energy_accu" (accumulation.get("reactive_energy_accumulation"))
     
-    //If first gauge past we should set led to blue to indicate that device is uploading
+    // If first gauge past we should set led to blue to indicate that device is uploading
     blue.set 1
     loop_iteration +=1
     
-<<<<<<< HEAD
-    sleep 59880 //Wait until next minute
-=======
-    if  VERBOSITY == 1 : 
+    if  VERBOSITY: 
       log "Humidity is $(%3.2f (humidity) ) %"
-      log "Measured temperature is $(%3.2f (temperature_stats.get("temperature_measured")) )˚C"
-      log "Calibrated temperature is $(%3.2f (temperature_stats.get("temperature_calibrated")) )˚C"
+      log "Measured temperature is $(%3.2f (temperature.get("temperature_measured")) )˚C"
+      log "Calibrated temperature is $(%3.2f (temperature.get("temperature_calibrated")) )˚C"
       log "---"
       log "voltage rms $(%3.1f power_stats.get("voltage_rms")) V"
       log "line freq $(%2.2f power_stats.get("line_freq")) Hz"
@@ -105,8 +99,7 @@ main:
       log ""
 
 
-    sleep (SAMPLING_TIME - 120) //Wait until next minute
->>>>>>> calibration
+    sleep (SAMPLING_TIME - 120) // Wait until next minute
 
   sleep 100
   blue.set 0
