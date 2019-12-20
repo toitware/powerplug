@@ -34,8 +34,6 @@ class SI7006A20:
     temperature_measured := (175.72 * (temp_response[0] * 256.0 + temp_response[1]) / 65536.0) - 46.85
     calibration_offset_transitional = calibration_offset_transitional * t_calib_coef_
     temperature_calibrated := temperature_measured + calibration_offset_transitional - calibration_offset_static
-    log "calibration_offset_transitional is"
-    log calibration_offset_transitional
     return {"temperature_measured": temperature_measured, "temperature_calibrated": temperature_calibrated}
 
   // Read last humidity measurement
