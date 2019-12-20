@@ -20,9 +20,6 @@ class SI7006A20:
   SI7006A20 .device_ .sampling_time_ .calibration_offset_static .calibration_base_ .calibration_offset_transitional:
     this.reset_
     t_calib_coef_ = (math.pow calibration_base_ (sampling_time_/60000.0))
-    log "T_calib_coef is"
-    log t_calib_coef_
-    
 
   // Read last temperature measurement
   read_temperature -> Map:
