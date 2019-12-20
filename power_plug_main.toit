@@ -28,10 +28,8 @@ main:
 
   th_device := SI7006A20 (i2c.connect TH_DEVICE)           // Temperature and humidity
   energy_device := MCP39F521 (i2c.connect ENERGY_DEVICE)   // Electrical measurements
-
-
-  i := 0
-  while i < 60:
+  
+  60.repeat:
     
     // Humidity and temperature measurements 
     humidity := th_device.read_humidity
@@ -90,7 +88,6 @@ main:
     blue.set 1
     
     sleep 59880 //Wait until next minute
-    i += 1
 
   sleep 100
   blue.set 0
