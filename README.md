@@ -23,7 +23,7 @@ In order to set up new device:
   toit device deploy button_deploy.yaml
 
 6. Deploy measurement file      
-  toit device deploy measurement1h.yaml
+  toit device deploy measurement.yaml
 
 Files included in the code:
 button_deploy.yaml
