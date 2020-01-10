@@ -15,13 +15,13 @@ SCL           ::= 16
 ENERGY_DEVICE ::= 0x74
 TH_DEVICE     ::= 0x40
 
-SAMPLING_TIME := 1000 //Measurement sampling time in ms
+SAMPLING_TIME := 10000 //Measurement sampling time in ms. Don't go below 5000ms because the device might crash!
 VERBOSITY := true
 
 //Calibration of temperature unit
-CALIBRATION_OFFSET := 6.8            //Steady offset representing difference between measured temp and real one when equilibrium is reached.
+CALIBRATION_OFFSET := 8.6            //Steady offset representing difference between measured temp and real one when equilibrium is reached.
 CALIBRATION_BASE := 0.6              //Base of exponential function approximating heat characteristics. Depends on how fast the device reaches steady state. It represents the fraction of transition value that will be reduced over a time of a minute
-CALIBRATION_OFFSET_TRANSITIONAL := 3 //Offset that will exponentialy decrease in each iteration of measurement. Approximates the heating period of the device
+CALIBRATION_OFFSET_TRANSITIONAL := 1 //Offset that will exponentialy decrease in each iteration of measurement. Approximates the heating period of the device
 
 main:
 
