@@ -26,7 +26,7 @@ class SI7006A20:
     commands := ByteArray 1
     commands[0] = READ_TEMPERATURE
     device_.write commands
-    sleep 20
+    sleep --ms= 20
     temp_response := device_.read 2
     temperature_measured := (175.72 * (temp_response[0] * 256.0 + temp_response[1]) / 65536.0) - 46.85
     calibration_offset_transitional = calibration_offset_transitional * t_calib_coef_
@@ -38,7 +38,7 @@ class SI7006A20:
     commands := ByteArray 1
     commands[0] = READ_HUMIDITY
     device_.write commands
-    sleep 20
+    sleep --ms= 20
     hum_response := device_.read 2
     humidity := (125.0 * (hum_response[0] * 256.0 + hum_response[1]) / 65536.0) - 6.0	    
     return humidity
@@ -48,4 +48,4 @@ class SI7006A20:
     commands := ByteArray 1
     commands[0] = RESET
     device_.write commands
-    sleep 150
+    sleep --ms= 150

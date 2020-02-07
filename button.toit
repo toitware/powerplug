@@ -24,17 +24,17 @@ main:
 
     //Wait for edge to turn relay and LED on
     button.wait_for 0
-    sleep 100
+    sleep --ms=100
     button.wait_for 1
 
     //Turn relay and green led on
     relay.set 1
     green.set 1
     red.set 0
-    sleep 500
+    sleep --ms=500
 
     //Wait for edge to turn it off
     button.wait_for 0
-    sleep 100
+    sleep --ms=100
     button.wait_for 1
    

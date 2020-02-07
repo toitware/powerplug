@@ -49,33 +49,33 @@ main:
     
     // Humidity and temperature measurements 
     humidity := th_device.read_humidity
-    metrics.gauge "powerswitch_humidity" humidity
+    metrics.update_gauge "powerswitch_humidity" humidity
     
     temperature := th_device.read_temperature
-    metrics.gauge "powerswitch_temperature_measured" (temperature.get("temperature_measured"))
-    metrics.gauge "powerswitch_temperature_calibrated" (temperature.get("temperature_calibrated"))
+    metrics.update_gauge "powerswitch_temperature_measured" (temperature.get("temperature_measured"))
+    metrics.update_gauge "powerswitch_temperature_calibrated" (temperature.get("temperature_calibrated"))
     
-    sleep 20
+    sleep --ms=20
 
-    // Print and gauge to grafana current electrial measurements
+    // Print and update_gauge to grafana current electrial measurements
     power_stats := energy_device.register_read_stats
-    metrics.gauge "powerswitch_voltage_rms" (power_stats.get("voltage_rms"))
-    metrics.gauge "powerswitch_line_freq" (power_stats.get("line_freq"))
-    metrics.gauge "powerswitch_power_factor" (power_stats.get("power_factor"))
-    metrics.gauge "powerswitch_current_rms" (power_stats.get("current_rms"))
-    metrics.gauge "powerswitch_active_power" (power_stats.get("active_power"))
-    metrics.gauge "powerswitch_reactive_power" (power_stats.get("reactive_power"))
-    metrics.gauge "powerswitch_apparent_power" (power_stats.get("apparent_power"))
+    metrics.update_gauge "powerswitch_voltage_rms" (power_stats.get("voltage_rms"))
+    metrics.update_gauge "powerswitch_line_freq" (power_stats.get("line_freq"))
+    metrics.update_gauge "powerswitch_power_factor" (power_stats.get("power_factor"))
+    metrics.update_gauge "powerswitch_current_rms" (power_stats.get("current_rms"))
+    metrics.update_gauge "powerswitch_active_power" (power_stats.get("active_power"))
+    metrics.update_gauge "powerswitch_reactive_power" (power_stats.get("reactive_power"))
+    metrics.update_gauge "powerswitch_apparent_power" (power_stats.get("apparent_power"))
     
-    sleep 20
+    sleep --ms=20
 
-    // Print and gauge to grafana accumulation measurements
+    // Print and update_gauge to grafana accumulation measurements
     accumulation := energy_device.register_read_accum
-    metrics.gauge "powerswitch_active_energy_accu" (accumulation.get("active_energy_accumulation"))
-    metrics.gauge "powerswitch_energy_cost" (accumulation.get("energy_cost"))
-    metrics.gauge "powerswitch_reactive_energy_accu" (accumulation.get("reactive_energy_accumulation"))
+    metrics.update_gauge "powerswitch_active_energy_accu" (accumulation.get("active_energy_accumulation"))
+    metrics.update_gauge "powerswitch_energy_cost" (accumulation.get("energy_cost"))
+    metrics.update_gauge "powerswitch_reactive_energy_accu" (accumulation.get("reactive_energy_accumulation"))
     
-    // If first gauge past we should set led to blue to indicate that device is uploading
+    // If first update_gauge past we should set led to blue to indicate that device is uploading
     blue.set 1
     loop_iteration +=1
     
@@ -99,10 +99,10 @@ main:
       log ""
 
 
-    sleep (SAMPLING_TIME - 120) // Wait until next minute
+    sleep --ms=(SAMPLING_TIME - 120) // Wait until next minute
 
-  sleep 100
+  sleep --ms=100
   blue.set 0
   // Turning device off
   energy_device.set_energy_accumulation false
-  sleep 50
+  sleep --ms=50

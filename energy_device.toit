@@ -54,7 +54,7 @@ class MCP39F521:
 
     device_.write command_array         // Execute command
 
-    sleep 20
+    sleep --ms= 20
 
     results := device_.read n_bytes_to_read + 3   // Return bytes
     
@@ -94,7 +94,7 @@ class MCP39F521:
     command_array[7] = checksum         // Checksum
 
     device_.write command_array         // Execute command
-    sleep 20
+    sleep --ms= 20
 
     results := device_.read n_bytes_to_read + 3  
 
@@ -137,6 +137,6 @@ class MCP39F521:
   // Reset energy accumulation
   reset_energy_accumulation -> none:
     this.set_energy_accumulation false
-    sleep 50
+    sleep --ms= 50
     this.set_energy_accumulation true
-    sleep 50
+    sleep --ms= 50
